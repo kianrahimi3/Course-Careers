@@ -1,0 +1,1 @@
+The files include all the work done within the Course Careers Software Development course. I am thankful for Tim for taking the time and making this course. The content was not only refreshing, it also taught me skills and allowed me to improve in areas where I was struggling.
