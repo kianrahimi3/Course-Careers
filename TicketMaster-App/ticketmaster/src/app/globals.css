@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -26,8 +27,47 @@ body {
     rgb(var(--background-start-rgb));
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+
+
+
+.eventListItem {
+  background-color: white;
+  border-width: 1px;
+  border-color: rgb(229 231 235);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  
+  height: 11rem;
+  position: relative;
+
+  @media (min-width: 768px) {
+    max-width: 36rem;
+    flex-direction: row;
   }
+
+  @media (prefers-color-scheme: dark) {
+    border-color: rgb(55 65 81);
+    background-color: rgb(31 41 55);
+  }
+ 
+}
+
+.eventListItem:hover {
+  background-color: #f7fafc;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: rgb(55 65 81);
+  }
+}
+
+.eventCardContainer {
+  overflow-y: auto;
+  scroll-behavior: auto;
+  /*margin: 1.5rem;*/
+}
+
+.eventTypeContainer {
+  width: 24%;
+  height: 85%;
+  flex-direction: column;
 }

@@ -1,66 +1,30 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import styles from "@/components/page.module.css";
+import "../app/globals.css";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import "../app//helperFunctions.js";
+import { callAllEvents, callMusic, callSports, callArtsAndTheater } from "../app//helperFunctions.js";
+
 
 var apiKey = process.env.NEXT_PUBLIC_API_KEY;
 
 
 export default function Home() {
-  const [data, setData] = useState([]);
+  const router = useRouter();
+
+  const [all, setAll] = useState([]);
   const [music, setMusic] = useState([]);
   const [sports, setSports] = useState([]);
   const [arts, setArts] = useState([]);
+  const [option, setOption] = useState("Keyword");
+  const [search, setSearch] = useState("");
+  const [location, setLocation] = useState();
+
   //console.log("API KEY: " + apiKey);
-
-  async function callSports() {
-    await fetch("https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&segmentId=KZFzniwnSyZfZ7v7nE&apikey=" + apiKey)
-      .then((data => data.json()))
-      .then((data) => {
-        //console.log(data);
-        const temp = data._embedded.events;
-        setSports(temp);
-      })
-      .catch(setSports([]));
-  };
-
-  async function callMusic() {
-    await fetch("https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&segmentId=KZFzniwnSyZfZ7v7nJ&apikey=" + apiKey)
-      .then((data => data.json()))
-      .then((data) => {
-        console.log(data);
-        const temp = data._embedded.events;
-        setMusic(temp);
-      })
-      .catch(setMusic([]));
-  };
-
-  async function callArtsAndTheater() {
-    await fetch("https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&segmentId=KZFzniwnSyZfZ7v7na&apikey=" + apiKey)
-      .then((data => data.json()))
-      .then((data) => {
-        //console.log(data);
-        const temp = data._embedded.events;
-        setArts(temp);
-      })
-      .catch(setArts([]));
-  };
-
-  async function callEvents() {
-    await fetch("https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&apikey=" + apiKey)
-      .then((data) => data.json())
-      //.then((data) => JSON.stringify(data))
-      .then((data) => {
-        //console.log(data);
-        const temp = data._embedded.events;
-        setData(temp);
-      });
-
-
-      await callMusic();
-      await callSports();
-      await callArtsAndTheater();
-  }
+  var longitude = 0;
+    var latitude = 0;
 
   const dateOptions = {
     year: "numeric",
@@ -70,106 +34,208 @@ export default function Home() {
     minute: "numeric"
   };
 
+  useEffect(() => {
+    if('geolocation' in navigator) {
+      // Retrieve latitude & longitude coordinates from `navigator.geolocation` Web API
+      navigator.geolocation.getCurrentPosition(({ coords }) => {
+          const { latitude, longitude } = coords;
+          setLocation({ latitude, longitude });
+      })
+  }
+  });
+
+  useEffect(() => {
+    
+    async function callEvents() {
+      await callAllEvents().then( (allEvents) => setAll(allEvents) );
+      await callMusic().then( (music) => setMusic(music) );
+      await callSports().then( (sports) => setSports(sports) );
+      await callArtsAndTheater().then( (arts) => setArts(arts) );
+      
+    };
+
+    try {
+      callEvents();
+      //insertSearchBar();
+      console.log(location);
+    }
+    catch (e) {
+      console.log(e);
+    }
+    
+  }, [location]);
+
+  const optionChange = (e) => {
+    var value = document.getElementById("dropdown-button").value;
+    setOption(e.target.value);
+    console.log(option);
+  }
+
+  function navigate(option) {
+    router.push("/events/" + option );
+  }
+
+  const searchValue = (e) => {
+    //const data = callAllEvents();
+    e.preventDefault();
+    router.push("/events/" + option + "/" + search);
+  }; 
+  
   return (
-    <div>
-        <div className="text-center">
-          <h1>Hello Kian</h1>
-          <h2>This will be the TicketMaster API</h2>
-          <button type="button" onClick={() => {callEvents() }}>Click me mister</button>
+    <div className="flex flex-col h-svh overflow-auto border-2 border-rose-500">
+      
+      <div className="flex flex-col border-2">
+        <div className="text-center mt-4">
+          <form onSubmit={searchValue} onChange={(e) => setSearch(e.target.value)} className="max-w-lg mx-auto">
+            <div className="flex">
+              <select id="dropdown-button" onChange={(e) => setOption(e.target.value)}
+                      className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600" 
+                      >All categories
+
+                <option value="Keyword" className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Keyword</option>
+                <option value="Venue" className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Venue</option>
+                <option value="City" className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">City</option>
+                <option value="Genre" className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Genre</option>
+              </select>
+
+                
+                <div className="relative w-full">
+                    <input type="search" id="search-dropdown" className="block p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search Mockups, Logos, Design Templates..." required />
+                    <button type="submit" className="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-blue-700 rounded-e-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                        <span className="sr-only">Search</span>
+                    </button>
+                </div>
+            </div>
+          </form>
+        </div>
+
+        <div className="flex flex-row justify-evenly max-h-svh h-svh">
+          <div className="eventTypeContainer flex">
+              <div className="flex flex-row justify-center my-7">
+                <a onClick={() => navigate("All")} href="#" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                  See All Events
+                  <svg className="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                  </svg>
+                </a>
+              </div>
+              
+            <div className="eventCardContainer border-4 border-zinc-600 border-solid rounded-md">
+              {all.map((e) => 
+                  <div key={e.id} className="bg-black m-1">
+                    <a href={e.url} target="_blank" className="eventListItem size-full flex flex-col items-center">
+                        <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
+                        <div className="overflow-hidden flex flex-col justify-between p-3 leading-normal">
+                            <h5 className="truncate dark:text-white">{e.name}</h5>
+                            <p className="truncate dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
+                            <p  className="truncate dark:text-gray-400">{e._embedded.venues[0].name}</p>
+                            <p className="truncate dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
+                        </div>
+                    </a>
+                  </div>
+                )
+              }
+          </div>
+        </div>
           
-      </div>
-      <div className="flex flex-row">
-        <div className="flex flex-col items-center m-2">
-          <ul>
-            {data.map((e) => 
-                <li id="eventListItem" key={e.id} className="m-1">
-                  <a href={e.url} target="_blank" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                      <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
-                      <div className="flex flex-col justify-between p-4 leading-normal">
-                          <h5 id="eventName" className="dark:text-white">{e.name}</h5>
-                          <p id="eventDescription" className="dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{JSON.stringify(e.classifications[0].segment.name)}</p>
 
-                      </div>
-                  </a>
-                </li>
-              )
-            }
-          </ul>
-        </div>
-
-        <div className="flex flex-col items-center m-2">
-          <ul>
+      <div className="eventTypeContainer flex">
+          <div className="flex flex-row justify-center my-7">
+            <a onClick={() => navigate("Music")} href="#" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
+              See All Music
+              <svg className="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+              </svg>
+            </a>
+          </div>
+          
+        <div className="eventCardContainer border-4 border-zinc-600 border-solid rounded-md">
             {music.map((e) => 
-                <li id="eventListItem" key={e.id} className="m-1">
-                  <a href={e.url} target="_blank" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
+                <div key={e.id} className="bg-black m-1">
+                  <a href={e.url} target="_blank" className="eventListItem size-full flex flex-col items-center">
                       <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
-                      <div className="flex flex-col justify-between p-4 leading-normal">
-                          <h5 id="eventName" className="dark:text-white">{e.name}</h5>
-                          <p id="eventDescription" className="dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{JSON.stringify(e.classifications[0].segment.name)}</p>
-
+                      <div className="overflow-hidden flex flex-col justify-between p-3 leading-normal">
+                          <h5 className="truncate dark:text-white">{e.name}</h5>
+                          <p className="truncate dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
+                          <p  className="truncate dark:text-gray-400">{e._embedded.venues[0].name}</p>
+                          <p className="truncate dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
                       </div>
                   </a>
-                </li>
+                </div>
               )
             }
-          </ul>
         </div>
-        
-        <div className="flex flex-col items-center m-2">
-          <ul>
-            {sports.map((e) => 
-                <li id="eventListItem" key={e.id} className="m-1">
-                  <a href={e.url} target="_blank" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                      <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
-                      <div className="flex flex-col justify-between p-4 leading-normal">
-                          <h5 id="eventName" className="dark:text-white">{e.name}</h5>
-                          <p id="eventDescription" className="dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{JSON.stringify(e.classifications[0].segment.name)}</p>
-
-                      </div>
-                  </a>
-                </li>
-              )
-            }
-          </ul>
-        </div>
-
-
-        <div className="flex flex-col items-center m-2">
-          <ul>
-            {arts.map((e) => 
-                <li id="eventListItem" key={e.id} className="m-1">
-                  <a href={e.url} target="_blank" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                      <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
-                      <div className="flex flex-col justify-between p-4 leading-normal">
-                          <h5 id="eventName" className="dark:text-white">{e.name}</h5>
-                          <p id="eventDescription" className="dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
-                          <p id="eventDescription" className="dark:text-gray-400">{JSON.stringify(e.classifications[0].segment.name)}</p>
-
-                      </div>
-                  </a>
-                </li>
-              )
-            }
-          </ul>
-        </div>
-
       </div>
-     
+      
+      <div className="eventTypeContainer flex">
+          <div className="flex flex-row justify-center my-7">
+            <a onClick={() => navigate("Sports")} href="#" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
+              See All Sports
+              <svg className="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+              </svg>
+            </a>
+          </div>
+          
+        <div className="eventCardContainer border-4 border-zinc-600 border-solid rounded-md">
+            {sports.map((e) => 
+                <div key={e.id} className="bg-black m-1">
+                  <a href={e.url} target="_blank" className="eventListItem size-full flex flex-col items-center">
+                      <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
+                      <div className="overflow-hidden flex flex-col justify-between p-3 leading-normal">
+                          <h5 className="truncate dark:text-white">{e.name}</h5>
+                          <p className="truncate dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
+                          <p  className="truncate dark:text-gray-400">{e._embedded.venues[0].name}</p>
+                          <p className="truncate dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
+                      </div>
+                  </a>
+                </div>
+              )
+            }
+        </div>
+      </div>
+
+
+      <div className="eventTypeContainer flex">
+          <div className="flex flex-row justify-center my-7">
+            <a onClick={() => navigate("Arts")} href="#" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
+              See All Arts
+              <svg className="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+              </svg>
+            </a>
+          </div>
+          
+        <div className="eventCardContainer border-4 border-zinc-600 border-solid rounded-md">
+            {arts.map((e) => 
+                <div key={e.id} className="bg-black m-1">
+                  <a href={e.url} target="_blank" className="eventListItem size-full flex flex-col items-center">
+                      <img id="eventImg" className="object-cover w-full rounded-t-lg h-96 md:h-36 md:w-48 md:rounded-none md:rounded-s-lg" src={e.images[3].url} alt=""></img>
+                      <div className="overflow-hidden flex flex-col justify-between p-3 leading-normal">
+                          <h5 className="truncate dark:text-white">{e.name}</h5>
+                          <p className="truncate dark:text-gray-400">{new Date(e.dates.start.dateTime).toLocaleDateString(undefined, dateOptions)}</p>
+                          <p  className="truncate dark:text-gray-400">{e._embedded.venues[0].name}</p>
+                          <p className="truncate dark:text-gray-400">{e._embedded.venues[0].city.name}, {e._embedded.venues[0].state.name}</p>
+                      </div>
+                  </a>
+                </div>
+              )
+            }
+        </div>
+      </div>
+    </div>
+
+     <button>Click Me</button>
     </div>
     
+      
+    </div>
   );
 }
+
 
 
 

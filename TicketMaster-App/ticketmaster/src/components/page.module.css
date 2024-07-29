@@ -18,11 +18,7 @@
     color: rgb(17 24 39);
 }
 
-#eventDescription {
-    margin-bottom: 0.75rem;
-    font: normal;
-    color: rgb(55 65 81);
-}
-
-#eventListItem {
+.eventListItem {
+    color: black;
+    background-color: black;
 }
