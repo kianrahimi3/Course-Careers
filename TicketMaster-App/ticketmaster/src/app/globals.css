@@ -41,7 +41,10 @@ body {
   position: relative;
 
   @media (min-width: 768px) {
-    max-width: 36rem;
+    max-width: 48
+    
+    
+    30rem;
     flex-direction: row;
   }
 
@@ -70,4 +73,8 @@ body {
   width: 24%;
   height: 85%;
   flex-direction: column;
+}
+
+.test {
+  grid-auto-columns: minmax(0, 1fr);
 }

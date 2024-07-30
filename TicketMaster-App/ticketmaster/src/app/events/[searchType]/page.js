@@ -47,7 +47,7 @@ export default function Event({params}) {
 
     const router = useRouter();
     return (
-        <div className="flex flex-col max-h-svh h-screen overflow-hidden">
+        <div className="flex flex-col h-screen overflow-hidden">
             <div className="text-center mt-4">
                 <form onSubmit={searchValue} onChange={(e) => setSearch(e.target.value)} className="max-w-lg mx-auto">
                 <div className="flex">
@@ -75,19 +75,17 @@ export default function Event({params}) {
                 </form>
             </div>
 
-            <Link href="/">Home Page</Link>
-
             <div className="flex flex-col">
                 <div className="flex flex-row justify-center my-7">
                     <a href="/" className="inline-flex items-center font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                        See All Events
+                        Back to Home Page
                         <svg className="w-4 h-4 ms-2 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
                         </svg>
                     </a>
                 </div>
                 
-                <div className="grid grid-rows-5 grid-flow-col overflow-x-scroll border-4 border-zinc-600 border-solid rounded-md">
+                <div className="grid grid-rows-5 grid-flow-col overflow-x-scroll border-4 border-zinc-600 border-solid rounded-md test justify-between">
                     {data.map((e) => 
                         <div key={e.id} className="bg-black m-1">
                             <a href={e.url} target="_blank" className="eventListItem flex flex-row items-center">

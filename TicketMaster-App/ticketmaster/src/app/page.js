@@ -82,9 +82,9 @@ export default function Home() {
   }; 
   
   return (
-    <div className="flex flex-col h-svh overflow-auto border-2 border-rose-500">
+    <div className="flex flex-col max-h-svh h-svh overflow-hidden">
       
-      <div className="flex flex-col border-2">
+      <div className="flex flex-col">
         <div className="text-center mt-4">
           <form onSubmit={searchValue} onChange={(e) => setSearch(e.target.value)} className="max-w-lg mx-auto">
             <div className="flex">
@@ -228,7 +228,6 @@ export default function Home() {
       </div>
     </div>
 
-     <button>Click Me</button>
     </div>
     
       
